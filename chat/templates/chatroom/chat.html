@@ -1,0 +1,24 @@
+{% extends "chatroom/base_generic.html" %}
+
+{% block content %}
+  <h2>Chat</h2>
+  <div>
+    {% for message in messages %}
+      <p>{{ message.sender.user.username }}: {{ message.content }}</p>
+      {% if message.photo %}
+        <img src="{{ message.photo.url }}" alt="Photo">
+      {% endif %}
+      {% if message.voice %}
+        <audio controls>
+          <source src="{{ message.voice.url }}" type="audio/mpeg">
+        </audio>
+      {% endif %}
+      <small>{{ message.timestamp }}</small>
+    {% endfor %}
+  </div>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Send</button>
+  </form>
+{% endblock %}

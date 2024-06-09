@@ -1,0 +1,7 @@
+{% extends "chatroom/base_generic.html" %}
+
+{% block content %}
+  <h2>Registration successful</h2>
+  <p>Welcome, {{ new_user.username }}! Your account has been created successfully.</p>
+  <a href="{% url 'login' %}">Login</a>
+{% endblock %}

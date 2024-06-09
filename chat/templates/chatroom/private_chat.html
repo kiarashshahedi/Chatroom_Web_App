@@ -1,0 +1,28 @@
+{% extends "chatroom/base_generic.html" %}
+
+{% block title %}Private Chat Room{% endblock %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h2>Private Chat with {{ room.user1.username if room.user1 != user else room.user2.username }}</h2>
+    <div class="chat-box">
+      {% for message in messages %}
+        <p><strong>{{ message.user.username }}</strong>: {{ message.content }}</p>
+        {% if message.photo %}
+          <img src="{{ message.photo.url }}" alt="Photo" />
+        {% endif %}
+        {% if message.voice %}
+          <audio controls>
+            <source src="{{ message.voice.url }}" type="audio/mpeg">
+            Your browser does not support the audio element.
+          </audio>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+  </div>
+{% endblock %}
