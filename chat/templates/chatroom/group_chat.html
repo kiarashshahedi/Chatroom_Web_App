@@ -1,0 +1,27 @@
+<!-- templates/chat/group_chat.html -->
+{% extends 'chatroom/base_generic.html' %}
+
+{% block content %}
+<h1>Group Chat: {{ group.name }}</h1>
+<p>Members:</p>
+<ul>
+    {% for member in group.members.all %}
+        <li>{{ member.user.username }}</li>
+    {% endfor %}
+</ul>
+
+<div id="chat">
+    <h2>Messages</h2>
+    <div id="messages">
+        {% for message in messages %}
+            <p><strong>{{ message.sender.user.username }}:</strong> {{ message.content }}</p>
+        {% endfor %}
+    </div>
+
+    <form method="post" action="">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Send</button>
+    </form>
+</div>
+{% endblock %}

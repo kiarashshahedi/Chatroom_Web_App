@@ -1,28 +1,152 @@
-{% extends "chatroom/base_generic.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emoji-mart/data@latest/emoji-mart.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+    <style>
+        /* Add your styles here */
+    </style>
+</head>
+<body>
+    <h1>Private Chat Room: {{ room_name }}</h1>
+    <div id="chat-log"></div>
+    <input type="text" id="chat-message-input">
+    <button id="chat-message-submit">Send</button>
+    <button id="send-emoji">😊</button>
+    <button id="start-video-call">Start Video Call</button>
+    <button id="send-voice-message">Send Voice Message</button>
+    <input type="file" id="send-image" accept="image/*">
+    <input type="file" id="send-video" accept="video/*">
+    <button id="send-ephemeral-photo">Send Ephemeral Photo</button>
 
-{% block title %}Private Chat Room{% endblock %}
+    <script>
+        // WebSocket setup
+        const roomName = "{{ room_name }}";
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+        );
 
-{% block content %}
-  <div class="container mt-4">
-    <h2>Private Chat with {{ room.user1.username if room.user1 != user else room.user2.username }}</h2>
-    <div class="chat-box">
-      {% for message in messages %}
-        <p><strong>{{ message.user.username }}</strong>: {{ message.content }}</p>
-        {% if message.photo %}
-          <img src="{{ message.photo.url }}" alt="Photo" />
-        {% endif %}
-        {% if message.voice %}
-          <audio controls>
-            <source src="{{ message.voice.url }}" type="audio/mpeg">
-            Your browser does not support the audio element.
-          </audio>
-        {% endif %}
-      {% endfor %}
-    </div>
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn btn-primary">Send</button>
-    </form>
-  </div>
-{% endblock %}
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'ephemeral_photo') {
+                const img = new Image();
+                img.src = data.message;
+                img.onload = () => {
+                    document.querySelector('#chat-log').appendChild(img);
+                    setTimeout(() => {
+                        img.remove();
+                    }, 3000); // Remove after 3 seconds
+                };
+            } else {
+                document.querySelector('#chat-log').innerText += (data.message + '\n');
+            }
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+
+        // Emoji Picker
+        document.querySelector('#send-emoji').onclick = function() {
+            const picker = new EmojiMart.Picker({
+                onEmojiSelect: emoji => {
+                    const messageInputDom = document.querySelector('#chat-message-input');
+                    messageInputDom.value += emoji.native;
+                }
+            });
+            document.body.appendChild(picker);
+        };
+
+        // WebRTC Video Call
+        document.querySelector('#start-video-call').onclick = function() {
+            // Implement WebRTC Video Call
+        };
+
+        // Send Voice Message
+        document.querySelector('#send-voice-message').onclick = function() {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    const mediaRecorder = new MediaRecorder(stream);
+                    let audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks);
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        reader.onloadend = () => {
+                            chatSocket.send(JSON.stringify({
+                                'message': reader.result,
+                                'type': 'voice'
+                            }));
+                        };
+                    };
+
+                    mediaRecorder.start();
+
+                    setTimeout(() => {
+                        mediaRecorder.stop();
+                    }, 3000); // Record for 3 seconds
+                });
+        };
+
+        // Send Image
+        document.querySelector('#send-image').onchange = function(event) {
+            const file = event.target.files[0];
+            // Implement image sending
+        };
+
+        // Send Video
+        document.querySelector('#send-video').onchange = function(event) {
+            const file = event.target.files[0];
+            // Implement video sending
+        };
+
+        // Send Ephemeral Photo
+        document.querySelector('#send-ephemeral-photo').onclick = function() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    const mediaRecorder = new MediaRecorder(stream);
+                    let videoChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        videoChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const videoBlob = new Blob(videoChunks);
+                        const reader = new FileReader();
+                        reader.readAsDataURL(videoBlob);
+                        reader.onloadend = () => {
+                            chatSocket.send(JSON.stringify({
+                                'message': reader.result,
+                                'type': 'ephemeral_photo'
+                            }));
+                        };
+                    };
+
+                    mediaRecorder.start();
+
+                    setTimeout(() => {
+                        mediaRecorder.stop();
+                    }, 3000); // Record for 3 seconds
+                });
+        };
+    </script>
+</body>
+</html>

@@ -4,11 +4,11 @@
   <h2>Welcome to the Chat Room</h2>
   <p>Join our community and start chatting with friends!</p>
   {% if user.is_authenticated %}
-    <p>Hello, {{ user.username }}! You have {{ user.profile.coins }} coins.</p>
-    <a href="{% url 'profile' %}">View Profile</a> | 
-    <a href="{% url 'coin_purchase' %}">Buy Coins</a> | 
-    <a href="{% url 'logout' %}">Logout</a>
-    <ul>
+  <p>Hello, {{ user.username }}! You have {{ user.profile.coins }} coins.</p>
+  <a href="{% url 'profile' %}">View Profile</a> | 
+  <a href="{% url 'coin_purchase' %}">Buy Coins</a> | 
+  <a href="{% url 'logout' %}">Logout</a>
+  <ul>
       <li><a href="{% url 'profile' %}">Profile</a></li>
       <li><a href="{% url 'coin_purchase' %}">Purchase Coins</a></li>
       <li><a href="{% url 'withdrawal' %}">Withdraw Funds</a></li>
@@ -22,7 +22,7 @@
       <li><a href="{% url 'password_reset' %}">Reset Password</a></li>
   </ul>
   {% else %}
-    <a href="{% url 'login' %}">Login</a> | 
-    <a href="{% url 'register' %}">Register</a>
+  <a href="{% url 'login' %}">Login</a> | 
+  <a href="{% url 'register' %}">Register</a>
   {% endif %}
 {% endblock %}

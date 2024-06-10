@@ -1,0 +1,11 @@
+<!-- templates/chat/create_group_chat.html -->
+{% extends 'chatroom/base_generic.html' %}
+
+{% block content %}
+  <h2>Create Group Chat</h2>
+  <form method="post" action="{% url 'create_group_chat' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Group</button>
+  </form>
+{% endblock %}
